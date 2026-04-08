@@ -27,16 +27,20 @@ enum Installer {
             )
 
             if resolvedPath != installPath {
-                // Remove old binary if exists
+                // Copy to temp location first, then move into place
+                let tempPath = installPath + ".new"
+                if FileManager.default.fileExists(atPath: tempPath) {
+                    try FileManager.default.removeItem(atPath: tempPath)
+                }
+                try FileManager.default.copyItem(atPath: resolvedPath, toPath: tempPath)
+
+                let attrs: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
+                try FileManager.default.setAttributes(attrs, ofItemAtPath: tempPath)
+
                 if FileManager.default.fileExists(atPath: installPath) {
                     try FileManager.default.removeItem(atPath: installPath)
                 }
-
-                try FileManager.default.copyItem(atPath: resolvedPath, toPath: installPath)
-
-                // Make executable
-                let attrs: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
-                try FileManager.default.setAttributes(attrs, ofItemAtPath: installPath)
+                try FileManager.default.moveItem(atPath: tempPath, toPath: installPath)
             }
         } catch {
             print("  \u{274C} Install failed: \(error.localizedDescription)")
@@ -135,14 +139,27 @@ enum Installer {
         let interval = currentInterval()
 
         do {
-            // Replace binary
+            // Verify source binary exists and is readable
+            guard FileManager.default.isReadableFile(atPath: resolvedPath) else {
+                print("  \u{274C} Upgrade failed: source binary not found at \(resolvedPath)")
+                return
+            }
+
+            // Copy to temp location first, then replace (atomic upgrade)
+            let tempPath = installPath + ".new"
+            if FileManager.default.fileExists(atPath: tempPath) {
+                try FileManager.default.removeItem(atPath: tempPath)
+            }
+            try FileManager.default.copyItem(atPath: resolvedPath, toPath: tempPath)
+
+            let attrs: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
+            try FileManager.default.setAttributes(attrs, ofItemAtPath: tempPath)
+
+            // Now safe to replace: remove old, move new into place
             if FileManager.default.fileExists(atPath: installPath) {
                 try FileManager.default.removeItem(atPath: installPath)
             }
-            try FileManager.default.copyItem(atPath: resolvedPath, toPath: installPath)
-
-            let attrs: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
-            try FileManager.default.setAttributes(attrs, ofItemAtPath: installPath)
+            try FileManager.default.moveItem(atPath: tempPath, toPath: installPath)
         } catch {
             print("  \u{274C} Upgrade failed: \(error.localizedDescription)")
             return
