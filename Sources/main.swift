@@ -13,6 +13,18 @@ struct HhhzApp {
             return
         }
 
+        // hhhz set <N> → set interval
+        if args.count > 2 && args[1] == "set" {
+            if let minutes = Int(args[2]) {
+                Installer.setInterval(minutes: minutes)
+            } else {
+                print("")
+                print("  ❌ 请输入有效的分钟数，例如: hhhz set 30")
+                print("")
+            }
+            return
+        }
+
         // hhhz --daemon → run as background daemon (internal use)
         if args.count > 1 && args[1] == "--daemon" {
             runDaemon()

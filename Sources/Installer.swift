@@ -44,30 +44,7 @@ enum Installer {
         }
 
         // Generate LaunchAgent plist
-        let plistContent = """
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-          "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-            <key>Label</key>
-            <string>\(plistLabel)</string>
-            <key>ProgramArguments</key>
-            <array>
-                <string>\(installPath)</string>
-                <string>--daemon</string>
-            </array>
-            <key>RunAtLoad</key>
-            <true/>
-            <key>KeepAlive</key>
-            <true/>
-            <key>StandardOutPath</key>
-            <string>/tmp/hhhz.log</string>
-            <key>StandardErrorPath</key>
-            <string>/tmp/hhhz.err</string>
-        </dict>
-        </plist>
-        """
+        let plistContent = Self.generatePlist()
 
         do {
             try plistContent.write(toFile: plistPath, atomically: true, encoding: .utf8)
@@ -94,10 +71,42 @@ enum Installer {
         }
 
         print("")
-        print("  \u{1F331} 好好活着 已安装！每 45 分钟会温柔地提醒你休息。")
+        print("  \u{1F331} 好好活着 已安装！每 \(currentInterval()) 分钟会温柔地提醒你休息。")
         print("  \u{2728} 从现在起，开机会自动守护你。")
         print("")
+        print("  调整间隔: hhhz set <分钟数>")
         print("  卸载: hhhz stop")
+        print("")
+    }
+
+    static func setInterval(minutes: Int) {
+        guard FileManager.default.fileExists(atPath: plistPath) else {
+            print("")
+            print("  \u{274C} 还没有安装哦，先运行 hhhz 安装吧")
+            print("")
+            return
+        }
+
+        guard minutes > 0 else {
+            print("")
+            print("  \u{274C} 间隔必须大于 0 分钟")
+            print("")
+            return
+        }
+
+        // Rewrite plist with new interval
+        let plistContent = generatePlist(intervalMinutes: minutes)
+        do {
+            try plistContent.write(toFile: plistPath, atomically: true, encoding: .utf8)
+        } catch {
+            print("  \u{274C} 写入失败: \(error.localizedDescription)")
+            return
+        }
+
+        reloadDaemon()
+
+        print("")
+        print("  \u{2728} 已设置为每 \(minutes) 分钟提醒一次")
         print("")
     }
 
@@ -131,6 +140,77 @@ enum Installer {
         print("")
         print("  \u{1F44B} 好好活着 已卸载。记得自己好好休息哦。")
         print("")
+    }
+
+    // MARK: - Helpers
+
+    /// Generate LaunchAgent plist XML with optional interval override
+    static func generatePlist(intervalMinutes: Int = 25) -> String {
+        return """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" \
+        "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>Label</key>
+            <string>\(plistLabel)</string>
+            <key>ProgramArguments</key>
+            <array>
+                <string>\(installPath)</string>
+                <string>--daemon</string>
+            </array>
+            <key>EnvironmentVariables</key>
+            <dict>
+                <key>HHHZ_INTERVAL</key>
+                <string>\(intervalMinutes)</string>
+            </dict>
+            <key>RunAtLoad</key>
+            <true/>
+            <key>KeepAlive</key>
+            <true/>
+        </dict>
+        </plist>
+        """
+    }
+
+    /// Reload the LaunchAgent daemon (bootout + bootstrap)
+    static func reloadDaemon() {
+        let uid = getuid()
+
+        // Bootout (stop)
+        let stop = Process()
+        stop.launchPath = "/bin/launchctl"
+        stop.arguments = ["bootout", "gui/\(uid)/\(plistLabel)"]
+        stop.launch()
+        stop.waitUntilExit()
+
+        // Bootstrap (start)
+        let start = Process()
+        start.launchPath = "/bin/launchctl"
+        start.arguments = ["bootstrap", "gui/\(uid)", plistPath]
+        start.launch()
+        start.waitUntilExit()
+
+        // Fallback to legacy if bootstrap fails
+        if start.terminationStatus != 0 {
+            let fallback = Process()
+            fallback.launchPath = "/bin/launchctl"
+            fallback.arguments = ["load", plistPath]
+            fallback.launch()
+            fallback.waitUntilExit()
+        }
+    }
+
+    /// Read current interval from plist, default 25
+    static func currentInterval() -> Int {
+        guard let data = FileManager.default.contents(atPath: plistPath),
+              let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+              let env = plist["EnvironmentVariables"] as? [String: String],
+              let val = env["HHHZ_INTERVAL"],
+              let mins = Int(val), mins > 0 else {
+            return 25
+        }
+        return mins
     }
 
     /// Resolve the path to an absolute, normalized path (handles relative paths and symlinks)

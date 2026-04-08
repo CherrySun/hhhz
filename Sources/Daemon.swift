@@ -8,8 +8,14 @@ class DaemonDelegate: NSObject, NSApplicationDelegate {
     private var lastCheckTime: CFTimeInterval = 0
     private var reminderWindow: ReminderWindow?
 
-    // 45 minutes of continuous use triggers reminder
-    private let triggerThreshold: Double = 45 * 60
+    // Configurable via HHHZ_INTERVAL env var (minutes), default 25
+    private let triggerThreshold: Double = {
+        if let val = ProcessInfo.processInfo.environment["HHHZ_INTERVAL"],
+           let mins = Double(val), mins > 0 {
+            return mins * 60
+        }
+        return 25 * 60
+    }()
     // 5 minutes idle resets the counter
     private let idleResetThreshold: Double = 5 * 60
     // Check interval
