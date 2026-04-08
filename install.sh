@@ -4,7 +4,7 @@ set -euo pipefail
 # hhhz - 好好活着
 # One-line installer
 
-REPO="sunmengying/hhhz"
+REPO="CherrySun/hhhz"
 INSTALL_DIR="$HOME/.local/bin"
 BINARY="$INSTALL_DIR/hhhz"
 

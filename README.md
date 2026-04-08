@@ -27,17 +27,15 @@
 ## 安装
 
 ```bash
-git clone https://github.com/sunmengying/hhhz.git
-cd hhhz
-make install
+curl -fsSL https://raw.githubusercontent.com/CherrySun/hhhz/main/install.sh | bash
 ```
 
-就这样。开机自启，无需任何配置。
+就这样。一行命令，开机自启，无需任何配置。
 
-> 也可以直接运行编译好的二进制文件：
+> 也可以从源码编译：
 > ```bash
-> swift build -c release
-> .build/release/hhhz
+> git clone https://github.com/CherrySun/hhhz.git
+> cd hhhz && make install
 > ```
 
 ## 卸载
