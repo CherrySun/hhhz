@@ -16,7 +16,7 @@ enum Installer {
             return
         }
 
-        // Copy binary to ~/.local/bin/
+        // Copy binary to ~/.local/bin/ (skip if already running from there)
         let currentBinary = CommandLine.arguments[0]
         let resolvedPath = resolvePath(currentBinary)
 
@@ -26,16 +26,18 @@ enum Installer {
                 withIntermediateDirectories: true
             )
 
-            // Remove old binary if exists
-            if FileManager.default.fileExists(atPath: installPath) {
-                try FileManager.default.removeItem(atPath: installPath)
+            if resolvedPath != installPath {
+                // Remove old binary if exists
+                if FileManager.default.fileExists(atPath: installPath) {
+                    try FileManager.default.removeItem(atPath: installPath)
+                }
+
+                try FileManager.default.copyItem(atPath: resolvedPath, toPath: installPath)
+
+                // Make executable
+                let attrs: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
+                try FileManager.default.setAttributes(attrs, ofItemAtPath: installPath)
             }
-
-            try FileManager.default.copyItem(atPath: resolvedPath, toPath: installPath)
-
-            // Make executable
-            let attrs: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
-            try FileManager.default.setAttributes(attrs, ofItemAtPath: installPath)
         } catch {
             print("  \u{274C} 安装失败: \(error.localizedDescription)")
             return
