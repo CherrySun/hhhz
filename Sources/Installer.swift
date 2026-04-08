@@ -11,7 +11,7 @@ enum Installer {
         if FileManager.default.fileExists(atPath: plistPath)
             && FileManager.default.fileExists(atPath: installPath) {
             print("")
-            print("  \u{1F331} 好好活着 已在守护你了，不用重复安装哦～")
+            print("  \u{1F331} hhhz 已在守护你了，不用重复安装哦～")
             print("")
             return
         }
@@ -71,7 +71,7 @@ enum Installer {
         }
 
         print("")
-        print("  \u{1F331} 好好活着 已安装！每 \(currentInterval()) 分钟会温柔地提醒你休息。")
+        print("  \u{1F331} hhhz 已安装！每 \(currentInterval()) 分钟会温柔地提醒你休息喵～")
         print("  \u{2728} 从现在起，开机会自动守护你。")
         print("")
         print("  调整间隔: hhhz set <分钟数>")
@@ -160,7 +160,7 @@ enum Installer {
         reloadDaemon()
 
         print("")
-        print("  \u{2728} 好好活着 已升级！提醒间隔保持为 \(interval) 分钟。")
+        print("  \u{2728} hhhz 已升级！提醒间隔保持为 \(interval) 分钟喵～")
         print("")
     }
 
@@ -192,7 +192,7 @@ enum Installer {
         }
 
         print("")
-        print("  \u{1F44B} 好好活着 已卸载。记得自己好好休息哦。")
+        print("  \u{1F44B} hhhz 已卸载。记得好好休息哦～")
         print("")
     }
 

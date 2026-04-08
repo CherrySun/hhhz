@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-# hhhz - 好好活着
+# hhhz - a cute rest reminder for macOS
 # One-line installer: curl -fsSL https://raw.githubusercontent.com/CherrySun/hhhz/main/install.sh | sh
 
 REPO="CherrySun/hhhz"
@@ -10,7 +10,7 @@ BINARY="$INSTALL_DIR/hhhz"
 PLIST="$HOME/Library/LaunchAgents/com.hhhz.daemon.plist"
 
 echo ""
-echo "  🌱 安装 hhhz (好好活着)..."
+echo "  🌱 安装 hhhz..."
 echo ""
 
 # macOS only
