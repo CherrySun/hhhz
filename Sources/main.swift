@@ -25,15 +25,21 @@ struct HhhzApp {
             return
         }
 
-        // hhhz --daemon → run as background daemon (internal use)
-        if args.count > 1 && args[1] == "--daemon" {
-            runDaemon()
+        // hhhz test / hhhz --show → show reminder immediately
+        if args.count > 1 && (args[1] == "test" || args[1] == "--show") {
+            showReminder()
             return
         }
 
-        // hhhz --show → show reminder immediately (internal testing)
-        if args.count > 1 && args[1] == "--show" {
-            showReminder()
+        // hhhz upgrade → upgrade binary, keep settings
+        if args.count > 1 && args[1] == "upgrade" {
+            Installer.upgrade()
+            return
+        }
+
+        // hhhz --daemon → run as background daemon (internal use)
+        if args.count > 1 && args[1] == "--daemon" {
+            runDaemon()
             return
         }
 

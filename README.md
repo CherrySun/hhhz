@@ -38,6 +38,14 @@ curl -fsSL https://raw.githubusercontent.com/CherrySun/hhhz/main/install.sh | sh
 > cd hhhz && make install
 > ```
 
+## 升级
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CherrySun/hhhz/main/install.sh | sh
+```
+
+同一行命令，已安装时会自动升级（保留你的提醒间隔设置）。
+
 ## 卸载
 
 ```bash
@@ -50,8 +58,9 @@ hhhz stop
 |------|------|
 | `hhhz` | 安装并启动守护进程（如已安装会提示） |
 | `hhhz set <分钟>` | 设置提醒间隔（如 `hhhz set 30`） |
+| `hhhz test` | 立即显示一个提醒气泡（看看效果） |
+| `hhhz upgrade` | 升级到最新版（保留你的设置） |
 | `hhhz stop` | 完全卸载（移除 LaunchAgent + 二进制文件） |
-| `hhhz --show` | 立即显示一个提醒气泡（调试用） |
 | `hhhz --daemon` | 以守护进程模式运行（内部使用） |
 
 ## 它会做什么

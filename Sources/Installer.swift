@@ -110,6 +110,60 @@ enum Installer {
         print("")
     }
 
+    static func upgrade() {
+        guard FileManager.default.fileExists(atPath: plistPath),
+              FileManager.default.fileExists(atPath: installPath) else {
+            print("")
+            print("  \u{274C} 还没有安装哦，先运行 hhhz 安装吧")
+            print("")
+            return
+        }
+
+        let currentBinary = CommandLine.arguments[0]
+        let resolvedPath = resolvePath(currentBinary)
+
+        // Must be run from a different path (e.g. newly downloaded binary)
+        guard resolvedPath != installPath else {
+            print("")
+            print("  \u{274C} 请用新版本的二进制文件来执行升级")
+            print("  \u{1F4A1} 升级方法: curl -fsSL https://raw.githubusercontent.com/CherrySun/hhhz/main/install.sh | sh")
+            print("")
+            return
+        }
+
+        // Preserve current interval setting
+        let interval = currentInterval()
+
+        do {
+            // Replace binary
+            if FileManager.default.fileExists(atPath: installPath) {
+                try FileManager.default.removeItem(atPath: installPath)
+            }
+            try FileManager.default.copyItem(atPath: resolvedPath, toPath: installPath)
+
+            let attrs: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
+            try FileManager.default.setAttributes(attrs, ofItemAtPath: installPath)
+        } catch {
+            print("  \u{274C} 升级失败: \(error.localizedDescription)")
+            return
+        }
+
+        // Rewrite plist (preserving interval) and reload
+        let plistContent = generatePlist(intervalMinutes: interval)
+        do {
+            try plistContent.write(toFile: plistPath, atomically: true, encoding: .utf8)
+        } catch {
+            print("  \u{274C} 写入 plist 失败: \(error.localizedDescription)")
+            return
+        }
+
+        reloadDaemon()
+
+        print("")
+        print("  \u{2728} 好好活着 已升级！提醒间隔保持为 \(interval) 分钟。")
+        print("")
+    }
+
     static func uninstall() {
         // Unload LaunchAgent using modern launchctl API
         if FileManager.default.fileExists(atPath: plistPath) {
