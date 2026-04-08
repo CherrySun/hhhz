@@ -11,7 +11,7 @@ enum Installer {
         if FileManager.default.fileExists(atPath: plistPath)
             && FileManager.default.fileExists(atPath: installPath) {
             print("")
-            print("  \u{1F331} hhhz 已在守护你了，不用重复安装哦～")
+            print("  \u{1F331} hhhz is already watching over you~")
             print("")
             return
         }
@@ -39,7 +39,7 @@ enum Installer {
                 try FileManager.default.setAttributes(attrs, ofItemAtPath: installPath)
             }
         } catch {
-            print("  \u{274C} 安装失败: \(error.localizedDescription)")
+            print("  \u{274C} Install failed: \(error.localizedDescription)")
             return
         }
 
@@ -49,7 +49,7 @@ enum Installer {
         do {
             try plistContent.write(toFile: plistPath, atomically: true, encoding: .utf8)
         } catch {
-            print("  \u{274C} 无法写入 LaunchAgent: \(error.localizedDescription)")
+            print("  \u{274C} Failed to write LaunchAgent: \(error.localizedDescription)")
             return
         }
 
@@ -71,25 +71,25 @@ enum Installer {
         }
 
         print("")
-        print("  \u{1F331} hhhz 已安装！每 \(currentInterval()) 分钟会温柔地提醒你休息喵～")
-        print("  \u{2728} 从现在起，开机会自动守护你。")
+        print("  \u{1F331} hhhz installed! A cute bubble will remind you to rest~")
+        print("  \u{2728} Auto-starts on boot. Take care of yourself!")
         print("")
-        print("  调整间隔: hhhz set <分钟数>")
-        print("  卸载: hhhz stop")
+        print("  Set interval: hhhz set <minutes>")
+        print("  Uninstall:    hhhz stop")
         print("")
     }
 
     static func setInterval(minutes: Int) {
         guard FileManager.default.fileExists(atPath: plistPath) else {
             print("")
-            print("  \u{274C} 还没有安装哦，先运行 hhhz 安装吧")
+            print("  \u{274C} Not installed yet. Run `hhhz` to install first")
             print("")
             return
         }
 
         guard minutes > 0 else {
             print("")
-            print("  \u{274C} 间隔必须大于 0 分钟")
+            print("  \u{274C} Interval must be greater than 0 minutes")
             print("")
             return
         }
@@ -99,14 +99,14 @@ enum Installer {
         do {
             try plistContent.write(toFile: plistPath, atomically: true, encoding: .utf8)
         } catch {
-            print("  \u{274C} 写入失败: \(error.localizedDescription)")
+            print("  \u{274C} Failed to write: \(error.localizedDescription)")
             return
         }
 
         reloadDaemon()
 
         print("")
-        print("  \u{2728} 已设置为每 \(minutes) 分钟提醒一次")
+        print("  \u{2728} Reminder interval set to \(minutes) minutes~")
         print("")
     }
 
@@ -114,7 +114,7 @@ enum Installer {
         guard FileManager.default.fileExists(atPath: plistPath),
               FileManager.default.fileExists(atPath: installPath) else {
             print("")
-            print("  \u{274C} 还没有安装哦，先运行 hhhz 安装吧")
+            print("  \u{274C} Not installed yet. Run `hhhz` to install first")
             print("")
             return
         }
@@ -125,8 +125,8 @@ enum Installer {
         // Must be run from a different path (e.g. newly downloaded binary)
         guard resolvedPath != installPath else {
             print("")
-            print("  \u{274C} 请用新版本的二进制文件来执行升级")
-            print("  \u{1F4A1} 升级方法: curl -fsSL https://raw.githubusercontent.com/CherrySun/hhhz/main/install.sh | sh")
+            print("  \u{274C} Please run upgrade from a newly downloaded binary")
+            print("  \u{1F4A1} Upgrade: curl -fsSL https://raw.githubusercontent.com/CherrySun/hhhz/main/install.sh | sh")
             print("")
             return
         }
@@ -144,7 +144,7 @@ enum Installer {
             let attrs: [FileAttributeKey: Any] = [.posixPermissions: 0o755]
             try FileManager.default.setAttributes(attrs, ofItemAtPath: installPath)
         } catch {
-            print("  \u{274C} 升级失败: \(error.localizedDescription)")
+            print("  \u{274C} Upgrade failed: \(error.localizedDescription)")
             return
         }
 
@@ -153,14 +153,14 @@ enum Installer {
         do {
             try plistContent.write(toFile: plistPath, atomically: true, encoding: .utf8)
         } catch {
-            print("  \u{274C} 写入 plist 失败: \(error.localizedDescription)")
+            print("  \u{274C} Failed to write plist: \(error.localizedDescription)")
             return
         }
 
         reloadDaemon()
 
         print("")
-        print("  \u{2728} hhhz 已升级！提醒间隔保持为 \(interval) 分钟喵～")
+        print("  \u{2728} hhhz upgraded! Your settings are preserved~")
         print("")
     }
 
@@ -192,7 +192,7 @@ enum Installer {
         }
 
         print("")
-        print("  \u{1F44B} hhhz 已卸载。记得好好休息哦～")
+        print("  \u{1F44B} hhhz uninstalled. Remember to take care of yourself~")
         print("")
     }
 

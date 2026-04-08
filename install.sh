@@ -10,12 +10,12 @@ BINARY="$INSTALL_DIR/hhhz"
 PLIST="$HOME/Library/LaunchAgents/com.hhhz.daemon.plist"
 
 echo ""
-echo "  🌱 安装 hhhz..."
+echo "  🌱 Installing hhhz..."
 echo ""
 
 # macOS only
 if [ "$(uname -s)" != "Darwin" ]; then
-    echo "  ❌ hhhz 仅支持 macOS"
+    echo "  ❌ hhhz is macOS only"
     exit 1
 fi
 
@@ -29,13 +29,13 @@ if [ "$ARCH" = "arm64" ]; then
 elif [ "$ARCH" = "x86_64" ]; then
     ASSET="hhhz-x86_64"
 else
-    echo "  ❌ 不支持的架构: $ARCH"
+    echo "  ❌ Unsupported architecture: $ARCH"
     exit 1
 fi
 
 # Download binary
 DOWNLOAD_URL="https://github.com/$REPO/releases/latest/download/$ASSET"
-echo "  ⬇️  下载中..."
+echo "  ⬇️  Downloading..."
 
 # Decide download target: if already installed, download to temp file for upgrade
 if [ -f "$PLIST" ] && [ -f "$BINARY" ]; then
@@ -51,7 +51,7 @@ if command -v curl >/dev/null 2>&1; then
 elif command -v wget >/dev/null 2>&1; then
     wget -q "$DOWNLOAD_URL" -O "$DOWNLOAD_TARGET"
 else
-    echo "  ❌ 需要 curl 或 wget"
+    echo "  ❌ curl or wget required"
     exit 1
 fi
 
@@ -80,7 +80,7 @@ else
             else
                 RC_FILE="~/.profile"
             fi
-            echo "  ⚠️  请将 ~/.local/bin 加入 PATH:"
+            echo "  ⚠️  Please add ~/.local/bin to your PATH:"
             echo "     echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> $RC_FILE"
             echo ""
             ;;

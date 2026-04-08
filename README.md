@@ -33,9 +33,9 @@
 ## 特性
 
 - 🫧 **会呼吸的泡泡** — 白粉渐变，边缘随呼吸颤动，膨胀时边框变亮变粗
-- 🔊 **随机小音效** — 猫叫、冒泡、叮咚、boop，每次随机一种，轻轻的
+- 🔊 **随机小音效** — 猫叫、鸟叫、风铃、水滴、冒泡……10 种小音效随机一种
 - 🌊 **自由漂浮** — 多层正弦波叠加，在屏幕上游来游去
-- 🎲 **不重复** — 60 个颜文字 × 30 条提醒语，最近 15 次不重复
+- 🎲 **不重复** — 60 个颜文字 × 60 条提醒语，最近 25 次不重复
 - 🧠 **很聪明** — 只在你真的连续用了 25 分钟才出现（可自定义）
 - 👆 **不烦人** — 30 秒后自己消失，或者戳它一下
 - 🪶 **超级轻** — 单个文件，零依赖，<1MB 内存
@@ -80,13 +80,15 @@ hhhz stop
 
 ## 泡泡会说什么
 
-三种风格随机混合：
+四种风格随机混合：
 
 **温柔型** — 去倒杯水吧，你值得这一小段路
 
 **卖萌型** — 你的水杯在哭泣，它已经被冷落好久了
 
-**文艺型** — 代码写不完，但这杯水可以喝完
+**俏皮型** — 刷够了吗？起来转一圈再回来刷
+
+**文艺型** — 屏幕装不下整个世界，走出去看看
 
 搭配 60 个随机颜文字：`(◕ᴗ◕✿)` `꒰ᐢ. .ᐢ꒱` `ʕ•ᴥ•ʔ` `(˶ᵔᵕᵔ˶)` `ฅ(•ㅅ•❀)ฅ` `૮ ˶ᵔ ᵕ ᵔ˶ ა` ...
 
@@ -117,9 +119,9 @@ you start working
 ## Features
 
 - 🫧 **Breathing bubble** — white-pink gradient, edges wobble with breathing rhythm, border pulses brighter
-- 🔊 **Cute sounds** — meow, bubble pop, twinkle, boop — a random one each time, very gentle
+- 🔊 **Cute sounds** — meow, chirp, wind chime, water drop, purr... 10 cute sounds, a random one each time
 - 🌊 **Free floating** — multi-layer sine wave trajectory, drifts across your screen
-- 🎲 **Never repeats** — 60 kaomoji × 30 messages, no repeats within last 15
+- 🎲 **Never repeats** — 60 kaomoji × 60 messages, no repeats within last 25
 - 🧠 **Smart** — only appears after 25 min of continuous use (customizable)
 - 👆 **Non-intrusive** — auto-disappears after 30s, or click to dismiss
 - 🪶 **Ultra light** — single binary, zero dependencies, <1MB memory
@@ -164,13 +166,15 @@ hhhz stop
 
 ## What the bubble says
 
-Three styles randomly mixed:
+Four styles randomly mixed:
 
 **Gentle** — Go pour yourself some water, you deserve that little walk
 
 **Cute** — Your water cup is crying, it's been neglected for too long
 
-**Poetic** — You can't finish all the code, but you can finish this glass of water
+**Playful** — Scrolled enough? Get up, take a walk, then come back
+
+**Poetic** — The screen can't hold the whole world, go see it for yourself
 
 Paired with 60 random kaomoji: `(◕ᴗ◕✿)` `꒰ᐢ. .ᐢ꒱` `ʕ•ᴥ•ʔ` `(˶ᵔᵕᵔ˶)` `ฅ(•ㅅ•❀)ฅ` `૮ ˶ᵔ ᵕ ᵔ˶ ა` ...
 
@@ -183,9 +187,9 @@ Paired with 60 random kaomoji: `(◕ᴗ◕✿)` `꒰ᐢ. .ᐢ꒱` `ʕ•ᴥ•ʔ
 - **CVDisplayLink** frame-synced animation
 - **48-point Catmull-Rom spline** + 4-layer sine perturbation for organic bubble shape
 - **Breathing**: wobble amplitude (6.5→11.5) + border width/opacity + scale(1.0→1.06) + alpha(0.82→1.0), period 1.1s
-- **Sound**: `AVAudioEngine` synthesized PCM — four cute sounds generated from sine waves, zero audio files
+- **Sound**: `AVAudioEngine` synthesized PCM — ten cute sounds generated from sine waves, zero audio files
 - **Idle detection**: `CGEventSource.secondsSinceLastEventType` (mouse/keyboard/click/scroll)
-- **Anti-repeat**: last 15 usage records tracked
+- **Anti-repeat**: last 25 usage records tracked
 - **Auto-start**: LaunchAgent (`~/Library/LaunchAgents/com.hhhz.daemon.plist`)
 - **Memory safe**: `Unmanaged.passRetained` prevents dangling pointers in CVDisplayLink callback
 - Single binary, 6 source files, ~1000 lines
