@@ -27,7 +27,7 @@
 ## 安装
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/CherrySun/hhhz/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/CherrySun/hhhz/main/install.sh | sh
 ```
 
 就这样。一行命令，开机自启，无需任何配置。
