@@ -4,20 +4,23 @@ import QuartzCore
 // MARK: - Bubble Shape
 
 enum BubbleShape {
-    static func path(center: CGPoint, radiusX: CGFloat, radiusY: CGFloat, time: Double) -> CGPath {
+    /// Generate bubble path. `breath` is 0~1 normalized breathing phase.
+    static func path(center: CGPoint, radiusX: CGFloat, radiusY: CGFloat, time: Double, breath: Double = 0) -> CGPath {
         let cx = center.x
         let cy = center.y
-        let wobble: CGFloat = 6.5
+        // Wobble amplitude pulsates with breathing: base 6.5, range ±5
+        let wobbleBase: CGFloat = 6.5
+        let wobbleBreath: CGFloat = wobbleBase + CGFloat(breath) * 5.0
         let n = 48
 
         var pts: [CGPoint] = []
         for i in 0..<n {
             let a = (CGFloat(i) / CGFloat(n)) * 2 * .pi
             let t = CGFloat(time)
-            let w = sin(a * 3 + t * 1.1) * wobble * 0.45
-                  + sin(a * 5 + t * 0.7 + 1.5) * wobble * 0.22
-                  + cos(a * 2 + t * 1.4 + 0.7) * wobble * 0.30
-                  + sin(a * 7 + t * 0.5 + 2.3) * wobble * 0.12
+            let w = sin(a * 3 + t * 1.1) * wobbleBreath * 0.45
+                  + sin(a * 5 + t * 0.7 + 1.5) * wobbleBreath * 0.22
+                  + cos(a * 2 + t * 1.4 + 0.7) * wobbleBreath * 0.30
+                  + sin(a * 7 + t * 0.5 + 2.3) * wobbleBreath * 0.12
             pts.append(CGPoint(x: cx + (radiusX + w) * cos(a),
                                y: cy + (radiusY + w) * sin(a)))
         }
@@ -145,7 +148,8 @@ class BubbleView: NSView {
 
         // Disable implicit animations on all shape layers
         let noAnim: [String: CAAction] = ["path": NSNull(), "transform": NSNull(),
-                                      "opacity": NSNull(), "position": NSNull()]
+                                      "opacity": NSNull(), "position": NSNull(),
+                                      "lineWidth": NSNull(), "strokeColor": NSNull()]
         for sl in [shadowShapeLayer, maskShapeLayer, highlightMask, borderLayer, innerBorderLayer] {
             sl.actions = noAnim
         }
@@ -205,9 +209,10 @@ class BubbleView: NSView {
     }
 
     /// Update bubble shape for given time — call from any thread (CALayer is thread-safe)
-    func updateShape(time: Double) {
+    /// `breath` is 0~1 normalized breathing phase (0=contracted, 1=expanded)
+    func updateShape(time: Double, breath: Double) {
         let c = CGPoint(x: bounds.midX, y: bounds.midY)
-        let bp = BubbleShape.path(center: c, radiusX: Self.bubbleRX, radiusY: Self.bubbleRY, time: time)
+        let bp = BubbleShape.path(center: c, radiusX: Self.bubbleRX, radiusY: Self.bubbleRY, time: time, breath: breath)
 
         // Inner border via scale transform (avoids computing a second full path)
         let innerScale = CGFloat(Self.bubbleRX - 4) / Self.bubbleRX
@@ -225,6 +230,13 @@ class BubbleView: NSView {
         borderLayer.path = bp
         innerBorderLayer.path = ip
         lastOuterPath = bp
+
+        // Border breathing: width and opacity pulse with breath
+        let b = CGFloat(breath)
+        borderLayer.lineWidth = 1.5 + b * 1.5          // 1.5 → 3.0
+        borderLayer.strokeColor = NSColor(white: 1.0, alpha: 0.40 + b * 0.35).cgColor  // 0.40 → 0.75
+        innerBorderLayer.lineWidth = 0.8 + b * 0.7      // 0.8 → 1.5
+        innerBorderLayer.strokeColor = NSColor(white: 1.0, alpha: 0.12 + b * 0.18).cgColor  // 0.12 → 0.30
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? {
@@ -324,6 +336,9 @@ class ReminderWindow: NSWindow {
         isEntering = true
         driftPhaseOffset = 0
 
+        // Play a random cute sound when bubble appears
+        CuteSound.playRandom()
+
         startDisplayLink()
         startDismissTimer()
     }
@@ -365,15 +380,18 @@ class ReminderWindow: NSWindow {
     private func tick() {
         let total = CACurrentMediaTime() - startTime
 
-        // 1. Update bubble shape directly (CALayer is thread-safe for property sets)
-        bubbleView?.updateShape(time: total)
-
-        // 2. Breath — fast period (1.1s), GPU-composited via layer transform
+        // 1. Breath — fast period (1.1s), 0~1 normalized
         let breathT = (sin(total * 2 * .pi / 1.1) + 1) / 2
-        let scale = 1.0 + CGFloat(breathT) * 0.03
-        let alpha = 0.85 + CGFloat(breathT) * 0.15
 
-        // 3. Drift — large amplitude for visible floating movement
+        // 2. Update bubble shape directly (CALayer is thread-safe for property sets)
+        //    Passes breath phase so wobble amplitude and border style pulsate together
+        bubbleView?.updateShape(time: total, breath: breathT)
+
+        // 3. Scale + alpha driven by breath — GPU-composited via layer transform
+        let scale = 1.0 + CGFloat(breathT) * 0.06     // 1.0 → 1.06 (was 1.03)
+        let alpha = 0.82 + CGFloat(breathT) * 0.18    // 0.82 → 1.0
+
+        // 4. Drift — large amplitude for visible floating movement
         let driftT = total - driftPhaseOffset
         let driftX = CGFloat(
             sin(driftT * 0.18) * 300
@@ -386,13 +404,13 @@ class ReminderWindow: NSWindow {
           + cos(driftT * 0.11 + 1.9) * 80
         )
 
-        // 4. Skip if previous main.async hasn't finished (prevents backlog on 120Hz+)
+        // 5. Skip if previous main.async hasn't finished (prevents backlog on 120Hz+)
         frameLock.lock()
         if pendingFrame { frameLock.unlock(); return }
         pendingFrame = true
         frameLock.unlock()
 
-        // 5. Window position + alpha must be set on main thread
+        // 6. Window position + alpha must be set on main thread
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             defer {
